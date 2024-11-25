@@ -17,7 +17,7 @@ func run() error {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "main",
 		Output: os.Stdout,
-		Level:  hclog.Debug,
+		Level:  hclog.Info,
 	})
 
 	// We're a host. Start by launching the plugin process.
@@ -37,7 +37,7 @@ func run() error {
 	}
 
 	// Request the plugin
-	raw, err := rpcClient.Dispense("kv_grpc")
+	raw, err := rpcClient.Dispense("shadow")
 	if err != nil {
 		return err
 	}

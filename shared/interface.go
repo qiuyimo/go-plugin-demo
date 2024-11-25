@@ -16,7 +16,7 @@ var Handshake = plugin.HandshakeConfig{
 }
 
 var PluginMap = map[string]plugin.Plugin{
-	"kv_grpc": &KVGRPCPlugin{},
+	"shadow": &KVGRPCPlugin{},
 }
 
 // ShadowInterface 业务接口：这个是与 proto/kv.proto 保持一致的业务接口，注意要返回 error
