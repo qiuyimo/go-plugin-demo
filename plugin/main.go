@@ -15,7 +15,7 @@ type ShadowImplement struct {
 }
 
 func (s *ShadowImplement) Download(key string, value []byte) error {
-	s.logger.Debug("##############key: %v, value: %v", key, string(value))
+	s.logger.Info("##############", "key", key, "value", string(value))
 	return nil
 }
 

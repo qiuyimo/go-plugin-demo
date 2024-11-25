@@ -15,7 +15,7 @@ import (
 
 func run() error {
 	logger := hclog.New(&hclog.LoggerOptions{
-		Name:   "plugin",
+		Name:   "main",
 		Output: os.Stdout,
 		Level:  hclog.Debug,
 	})
@@ -45,10 +45,11 @@ func run() error {
 	// We should have a ShadowInterface store now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
 	shadowCli := raw.(shared.ShadowInterface)
-	err = shadowCli.Download("a", nil)
+	err = shadowCli.Download("a", []byte("bbb"))
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 	}
+	logger.Info("main complete")
 
 	return nil
 }
