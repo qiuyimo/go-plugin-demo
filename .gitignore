@@ -24,3 +24,5 @@ go.work
 kv
 kv-go-grpc
 kv_hello
+/go_build_demo
+/shadow
