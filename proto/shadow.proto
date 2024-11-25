@@ -9,8 +9,10 @@ message DownloadReq {
   string bucket = 4;
 }
 
-message Empty {}
+message GetResponse {
+  bytes value = 1;
+}
 
 service Shadow {
-  rpc Download(DownloadReq) returns (Empty);
+  rpc Download(DownloadReq) returns (GetResponse);
 }

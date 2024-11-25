@@ -14,9 +14,9 @@ type ShadowImplement struct {
 	logger hclog.Logger
 }
 
-func (s *ShadowImplement) Download(id, name, version, bucket string) error {
+func (s *ShadowImplement) Download(id, name, version, bucket string) ([]byte, error) {
 	s.logger.Info("##############", "id", id, "name", name, "version", version, "bucket", bucket)
-	return nil
+	return []byte("aaa"), nil
 }
 
 func main() {

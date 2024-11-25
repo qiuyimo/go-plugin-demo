@@ -45,11 +45,11 @@ func run() error {
 	// We should have a ShadowInterface store now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
 	shadowCli := raw.(shared.ShadowInterface)
-	err = shadowCli.Download("id:1", "name:a", "version:v1.1.1", "bucket:shadow")
+	m, err := shadowCli.Download("id:1", "name:a", "version:v1.1.1", "bucket:shadow")
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 	}
-	logger.Info("main complete")
+	logger.Info("main complete", "m", m)
 
 	return nil
 }

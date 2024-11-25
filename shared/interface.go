@@ -21,7 +21,7 @@ var PluginMap = map[string]plugin.Plugin{
 
 // ShadowInterface 业务接口：这个是与 proto/kv.proto 保持一致的业务接口，注意要返回 error
 type ShadowInterface interface {
-	Download(id, name, version, bucket string) error
+	Download(id, name, version, bucket string) ([]byte, error)
 }
 
 type ShadowGRPCPlugin struct {

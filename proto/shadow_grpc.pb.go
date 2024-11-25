@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.28.3
-// source: proto/kv.proto
+// source: proto/shadow.proto
 
 package proto
 
@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ShadowClient interface {
-	Download(ctx context.Context, in *DownloadReq, opts ...grpc.CallOption) (*Empty, error)
+	Download(ctx context.Context, in *DownloadReq, opts ...grpc.CallOption) (*GetResponse, error)
 }
 
 type shadowClient struct {
@@ -37,9 +37,9 @@ func NewShadowClient(cc grpc.ClientConnInterface) ShadowClient {
 	return &shadowClient{cc}
 }
 
-func (c *shadowClient) Download(ctx context.Context, in *DownloadReq, opts ...grpc.CallOption) (*Empty, error) {
+func (c *shadowClient) Download(ctx context.Context, in *DownloadReq, opts ...grpc.CallOption) (*GetResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
+	out := new(GetResponse)
 	err := c.cc.Invoke(ctx, Shadow_Download_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (c *shadowClient) Download(ctx context.Context, in *DownloadReq, opts ...gr
 // All implementations must embed UnimplementedShadowServer
 // for forward compatibility.
 type ShadowServer interface {
-	Download(context.Context, *DownloadReq) (*Empty, error)
+	Download(context.Context, *DownloadReq) (*GetResponse, error)
 	mustEmbedUnimplementedShadowServer()
 }
 
@@ -62,7 +62,7 @@ type ShadowServer interface {
 // pointer dereference when methods are called.
 type UnimplementedShadowServer struct{}
 
-func (UnimplementedShadowServer) Download(context.Context, *DownloadReq) (*Empty, error) {
+func (UnimplementedShadowServer) Download(context.Context, *DownloadReq) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Download not implemented")
 }
 func (UnimplementedShadowServer) mustEmbedUnimplementedShadowServer() {}
@@ -117,5 +117,5 @@ var Shadow_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/kv.proto",
+	Metadata: "proto/shadow.proto",
 }
