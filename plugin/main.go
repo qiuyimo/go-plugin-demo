@@ -35,7 +35,7 @@ func main() {
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins: map[string]plugin.Plugin{
-			"kv": &shared.KVGRPCPlugin{Impl: shadowImpl},
+			"shadow_plugin": &shared.ShadowGRPCPlugin{Impl: shadowImpl},
 		},
 		GRPCServer: plugin.DefaultGRPCServer,
 	})
