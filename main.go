@@ -17,7 +17,7 @@ func run() error {
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  shared.Handshake,
 		Plugins:          shared.PluginMap,
-		Cmd:              exec.Command("sh", "-c", os.Getenv("KV_PLUGIN")),
+		Cmd:              exec.Command("./plugin.exe"),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 	})
 	defer client.Kill()
@@ -39,14 +39,6 @@ func run() error {
 	kv := raw.(shared.KV)
 	os.Args = os.Args[1:]
 	switch os.Args[0] {
-	case "get":
-		result, err := kv.Get(os.Args[1])
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(string(result))
-
 	case "put":
 		err := kv.Put(os.Args[1], []byte(os.Args[2]))
 		if err != nil {

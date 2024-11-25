@@ -19,7 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KV_Get_FullMethodName = "/proto.KV/Get"
 	KV_Put_FullMethodName = "/proto.KV/Put"
 )
 
@@ -27,7 +26,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KVClient interface {
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
@@ -37,16 +35,6 @@ type kVClient struct {
 
 func NewKVClient(cc grpc.ClientConnInterface) KVClient {
 	return &kVClient{cc}
-}
-
-func (c *kVClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetResponse)
-	err := c.cc.Invoke(ctx, KV_Get_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *kVClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*Empty, error) {
@@ -63,7 +51,6 @@ func (c *kVClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOpt
 // All implementations must embed UnimplementedKVServer
 // for forward compatibility.
 type KVServer interface {
-	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Put(context.Context, *PutRequest) (*Empty, error)
 	mustEmbedUnimplementedKVServer()
 }
@@ -75,9 +62,6 @@ type KVServer interface {
 // pointer dereference when methods are called.
 type UnimplementedKVServer struct{}
 
-func (UnimplementedKVServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
-}
 func (UnimplementedKVServer) Put(context.Context, *PutRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
 }
@@ -100,24 +84,6 @@ func RegisterKVServer(s grpc.ServiceRegistrar, srv KVServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&KV_ServiceDesc, srv)
-}
-
-func _KV_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KVServer).Get(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: KV_Get_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KVServer).Get(ctx, req.(*GetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _KV_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -145,10 +111,6 @@ var KV_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.KV",
 	HandlerType: (*KVServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Get",
-			Handler:    _KV_Get_Handler,
-		},
 		{
 			MethodName: "Put",
 			Handler:    _KV_Put_Handler,
