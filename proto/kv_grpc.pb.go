@@ -19,101 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KV_Put_FullMethodName = "/proto.KV/Put"
+	Shadow_Download_FullMethodName = "/proto.Shadow/Download"
 )
 
-// KVClient is the client API for KV service.
+// ShadowClient is the client API for Shadow service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type KVClient interface {
-	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*Empty, error)
+type ShadowClient interface {
+	Download(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
-type kVClient struct {
+type shadowClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewKVClient(cc grpc.ClientConnInterface) KVClient {
-	return &kVClient{cc}
+func NewShadowClient(cc grpc.ClientConnInterface) ShadowClient {
+	return &shadowClient{cc}
 }
 
-func (c *kVClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *shadowClient) Download(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, KV_Put_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Shadow_Download_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// KVServer is the server API for KV service.
-// All implementations must embed UnimplementedKVServer
+// ShadowServer is the server API for Shadow service.
+// All implementations must embed UnimplementedShadowServer
 // for forward compatibility.
-type KVServer interface {
-	Put(context.Context, *PutRequest) (*Empty, error)
-	mustEmbedUnimplementedKVServer()
+type ShadowServer interface {
+	Download(context.Context, *PutRequest) (*Empty, error)
+	mustEmbedUnimplementedShadowServer()
 }
 
-// UnimplementedKVServer must be embedded to have
+// UnimplementedShadowServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedKVServer struct{}
+type UnimplementedShadowServer struct{}
 
-func (UnimplementedKVServer) Put(context.Context, *PutRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
+func (UnimplementedShadowServer) Download(context.Context, *PutRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Download not implemented")
 }
-func (UnimplementedKVServer) mustEmbedUnimplementedKVServer() {}
-func (UnimplementedKVServer) testEmbeddedByValue()            {}
+func (UnimplementedShadowServer) mustEmbedUnimplementedShadowServer() {}
+func (UnimplementedShadowServer) testEmbeddedByValue()                {}
 
-// UnsafeKVServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to KVServer will
+// UnsafeShadowServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ShadowServer will
 // result in compilation errors.
-type UnsafeKVServer interface {
-	mustEmbedUnimplementedKVServer()
+type UnsafeShadowServer interface {
+	mustEmbedUnimplementedShadowServer()
 }
 
-func RegisterKVServer(s grpc.ServiceRegistrar, srv KVServer) {
-	// If the following call pancis, it indicates UnimplementedKVServer was
+func RegisterShadowServer(s grpc.ServiceRegistrar, srv ShadowServer) {
+	// If the following call pancis, it indicates UnimplementedShadowServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&KV_ServiceDesc, srv)
+	s.RegisterService(&Shadow_ServiceDesc, srv)
 }
 
-func _KV_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Shadow_Download_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KVServer).Put(ctx, in)
+		return srv.(ShadowServer).Download(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KV_Put_FullMethodName,
+		FullMethod: Shadow_Download_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KVServer).Put(ctx, req.(*PutRequest))
+		return srv.(ShadowServer).Download(ctx, req.(*PutRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// KV_ServiceDesc is the grpc.ServiceDesc for KV service.
+// Shadow_ServiceDesc is the grpc.ServiceDesc for Shadow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var KV_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.KV",
-	HandlerType: (*KVServer)(nil),
+var Shadow_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.Shadow",
+	HandlerType: (*ShadowServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Put",
-			Handler:    _KV_Put_Handler,
+			MethodName: "Download",
+			Handler:    _Shadow_Download_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

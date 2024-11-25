@@ -9,6 +9,6 @@ message PutRequest {
 
 message Empty {}
 
-service KV {
-  rpc Put(PutRequest) returns (Empty);
+service Shadow {
+  rpc Download(PutRequest) returns (Empty);
 }

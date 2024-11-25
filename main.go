@@ -7,18 +7,26 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 
 	"demo/shared"
 )
 
 func run() error {
+	logger := hclog.New(&hclog.LoggerOptions{
+		Name:   "plugin",
+		Output: os.Stdout,
+		Level:  hclog.Debug,
+	})
+
 	// We're a host. Start by launching the plugin process.
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  shared.Handshake,
 		Plugins:          shared.PluginMap,
 		Cmd:              exec.Command("./plugin.exe"),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Logger:           logger,
 	})
 	defer client.Kill()
 
@@ -34,19 +42,12 @@ func run() error {
 		return err
 	}
 
-	// We should have a KV store now! This feels like a normal interface
+	// We should have a ShadowInterface store now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
-	kv := raw.(shared.KV)
-	os.Args = os.Args[1:]
-	switch os.Args[0] {
-	case "put":
-		err := kv.Put(os.Args[1], []byte(os.Args[2]))
-		if err != nil {
-			return err
-		}
-
-	default:
-		return fmt.Errorf("Please only use 'get' or 'put', given: %q", os.Args[0])
+	shadowCli := raw.(shared.ShadowInterface)
+	err = shadowCli.Download("a", nil)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
 	}
 
 	return nil

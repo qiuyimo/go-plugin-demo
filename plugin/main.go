@@ -1,31 +1,41 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 
 	"demo/shared"
 )
 
-// KVImplement 业务接口的实现
-type KVImplement struct{}
-
-func (KVImplement) Put(key string, value []byte) error {
-	value = []byte(fmt.Sprintf("%s\n\nWritten from plugin-go-grpc", string(value)))
-	return os.WriteFile("kv_"+key, value, 0644)
+// ShadowImplement 业务接口的实现
+type ShadowImplement struct {
+	logger hclog.Logger
 }
 
-func (KVImplement) Get(key string) ([]byte, error) {
-	return os.ReadFile("kv_" + key)
+func (s *ShadowImplement) Download(key string, value []byte) error {
+	s.logger.Debug("##############key: %v, value: %v", key, string(value))
+	return nil
 }
 
 func main() {
+	logger := hclog.New(&hclog.LoggerOptions{
+		Level:      hclog.Trace,
+		Output:     os.Stderr,
+		JSONFormat: true,
+	})
+
+	shadowImpl := &ShadowImplement{
+		logger: logger,
+	}
+
+	logger.Debug("message from plugin", "foo", "bar")
+
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins: map[string]plugin.Plugin{
-			"kv": &shared.KVGRPCPlugin{Impl: &KVImplement{}},
+			"kv": &shared.KVGRPCPlugin{Impl: shadowImpl},
 		},
 		GRPCServer: plugin.DefaultGRPCServer,
 	})
