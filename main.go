@@ -2,66 +2,96 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
+	"net/http"
 	"os"
 	"os/exec"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 
 	"demo/shared"
 )
 
-func run() error {
-	logger := hclog.New(&hclog.LoggerOptions{
-		Name:   "main",
-		Output: os.Stdout,
-		Level:  hclog.Info,
-	})
+var (
+	plugins map[string]*plugin.Client
+	logger  hclog.Logger
+)
 
-	// We're a host. Start by launching the plugin process.
-	client := plugin.NewClient(&plugin.ClientConfig{
+const (
+	ShadowPluginName = "shadow"
+)
+
+func initPlugin() {
+	plugins[ShadowPluginName] = plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  shared.Handshake,
 		Plugins:          shared.PluginMap,
 		Cmd:              exec.Command("./plugin.exe"),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 		Logger:           logger,
 	})
-	defer client.Kill()
-
-	// Connect via RPC
-	rpcClient, err := client.Client()
-	if err != nil {
-		return err
-	}
-
-	// Request the plugin
-	raw, err := rpcClient.Dispense("shadow")
-	if err != nil {
-		return err
-	}
-
-	// We should have a ShadowInterface store now! This feels like a normal interface
-	// implementation but is in fact over an RPC connection.
-	shadowCli := raw.(shared.ShadowInterface)
-	m, err := shadowCli.Download("id:1", "name:a", "version:v1.1.1", "bucket:shadow")
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-	}
-	logger.Info("main complete", "m", m)
-
-	return nil
 }
 
 func main() {
-	// We don't want to see the plugin logs.
-	log.SetOutput(ioutil.Discard)
+	logger = hclog.New(&hclog.LoggerOptions{
+		Name:   "main",
+		Output: os.Stdout,
+		Level:  hclog.Info,
+	})
 
-	if err := run(); err != nil {
-		fmt.Printf("error: %+v\n", err)
-		os.Exit(1)
-	}
+	plugins = make(map[string]*plugin.Client)
 
-	os.Exit(0)
+	r := gin.Default()
+
+	r.GET("/begin", func(c *gin.Context) {
+		initPlugin()
+		addr, err := plugins[ShadowPluginName].Start()
+		if err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("err: %v\n", err))
+			return
+		}
+		c.String(http.StatusOK, "addr: %s", addr.String())
+	})
+
+	r.GET("/stop", func(c *gin.Context) {
+		client, ok := plugins[ShadowPluginName]
+		if !ok {
+			c.String(http.StatusBadRequest, "shadow plugin not found")
+			return
+		}
+
+		client.Kill()
+		c.String(http.StatusOK, "stopped")
+	})
+
+	r.GET("/download", func(c *gin.Context) {
+		client, ok := plugins[ShadowPluginName]
+		if !ok {
+			c.String(http.StatusBadRequest, "shadow plugin not found")
+			return
+		}
+
+		rpcClient, err := client.Client()
+		if err != nil {
+			c.String(http.StatusBadRequest, "err: %v", err)
+			return
+		}
+
+		raw, err := rpcClient.Dispense("shadow")
+		if err != nil {
+			c.String(http.StatusBadRequest, "err: %v", err)
+			return
+		}
+
+		shadowCli := raw.(shared.ShadowInterface)
+		res, err := shadowCli.Download("id:1", "name:a", "version:v1.1.1", "bucket:shadow")
+		if err != nil {
+			c.String(http.StatusBadRequest, "err: %v", err)
+			return
+		}
+
+		c.String(http.StatusOK, "resp: %s", string(res))
+	})
+
+	r.Run(":8080")
 }
